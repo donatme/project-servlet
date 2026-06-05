@@ -1,5 +1,6 @@
 package com.tictactoe;
 
+import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -11,8 +12,6 @@ import java.util.List;
 
 @WebServlet(name = "LogicServlet", value = "/logic")
 public class LogicServlet extends HttpServlet {
-
-
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         // Отримуємо поточну сесію
@@ -23,9 +22,26 @@ public class LogicServlet extends HttpServlet {
 
         // Отримуємо індекс ячейки, на яку відбувся клік
         int index = getSelectedIndex(req);
+        Sign currentSign = field.getField().get(index);
+
+        // Перевіряємо, що ячейка, на яку відбувся клік, порожня.
+        // В іншому випадку нічого не робимо і посилаємо користувача на ту ж саму сторінку без змін
+        // параметрів у сесії
+        if (Sign.EMPTY != currentSign) {
+            RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/index.jsp");
+            dispatcher.forward(req, resp);
+            return;
+        }
 
         // Ставимо хрестик в ячейці, на яку клікнув користувач
         field.getField().put(index, Sign.CROSS);
+
+        // Отримуємо порожню ячейку поля
+        int emptyFieldIndex = field.getEmptyFieldIndex();
+
+        if (emptyFieldIndex >= 0) {
+            field.getField().put(emptyFieldIndex, Sign.NOUGHT);
+        }
 
         // Рахуємо список значків
         List<Sign> data = field.getFieldData();
@@ -42,7 +58,6 @@ public class LogicServlet extends HttpServlet {
         boolean isNumeric = click.chars().allMatch(Character::isDigit);
         return isNumeric ? Integer.parseInt(click) : 0;
     }
-
 
     private Field extractField(HttpSession currentSession) {
         Object fieldAttribute = currentSession.getAttribute("field");
