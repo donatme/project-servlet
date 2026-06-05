@@ -24,6 +24,11 @@ public class LogicServlet extends HttpServlet {
         int index = getSelectedIndex(req);
         Sign currentSign = field.getField().get(index);
 
+        // Перевіряємо, чи не переміг хрестик після додавання останнього кліку користувача
+        if (checkWin(resp, currentSession, field)) {
+            return;
+        }
+
         // Перевіряємо, що ячейка, на яку відбувся клік, порожня.
         // В іншому випадку нічого не робимо і посилаємо користувача на ту ж саму сторінку без змін
         // параметрів у сесії
@@ -38,6 +43,11 @@ public class LogicServlet extends HttpServlet {
 
         // Отримуємо порожню ячейку поля
         int emptyFieldIndex = field.getEmptyFieldIndex();
+
+        // Перевіряємо, чи не переміг хрестик після додавання останнього кліку користувача
+        if (checkWin(resp, currentSession, field)) {
+            return;
+        }
 
         if (emptyFieldIndex >= 0) {
             field.getField().put(emptyFieldIndex, Sign.NOUGHT);
@@ -66,5 +76,28 @@ public class LogicServlet extends HttpServlet {
             throw new RuntimeException("Session is broken, try one more time");
         }
         return (Field) fieldAttribute;
+    }
+
+    /**
+     * Метод перевіряє, чи нема трьох хрестиків/нуликів в один ряд.
+     * Повертає true/false
+     */
+    private boolean checkWin(HttpServletResponse response, HttpSession currentSession, Field field) throws IOException {
+        Sign winner = field.checkWin();
+        if (Sign.CROSS == winner || Sign.NOUGHT == winner) {
+            // Додаємо прапорець, який показує, що хтось переміг
+            currentSession.setAttribute("winner", winner);
+
+            // Рахуємо список значків
+            List<Sign> data = field.getFieldData();
+
+            // Оновлюємо цей список у сесії
+            currentSession.setAttribute("data", data);
+
+            // Шлемо редирект
+            response.sendRedirect("/index.jsp");
+            return true;
+        }
+        return false;
     }
 }
