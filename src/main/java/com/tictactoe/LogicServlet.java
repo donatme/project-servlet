@@ -24,11 +24,6 @@ public class LogicServlet extends HttpServlet {
         int index = getSelectedIndex(req);
         Sign currentSign = field.getField().get(index);
 
-        // Перевіряємо, чи не переміг хрестик після додавання останнього кліку користувача
-        if (checkWin(resp, currentSession, field)) {
-            return;
-        }
-
         // Перевіряємо, що ячейка, на яку відбувся клік, порожня.
         // В іншому випадку нічого не робимо і посилаємо користувача на ту ж саму сторінку без змін
         // параметрів у сесії
@@ -41,16 +36,19 @@ public class LogicServlet extends HttpServlet {
         // Ставимо хрестик в ячейці, на яку клікнув користувач
         field.getField().put(index, Sign.CROSS);
 
-        // Отримуємо порожню ячейку поля
-        int emptyFieldIndex = field.getEmptyFieldIndex();
-
         // Перевіряємо, чи не переміг хрестик після додавання останнього кліку користувача
         if (checkWin(resp, currentSession, field)) {
             return;
         }
+        // Отримуємо порожню ячейку поля
+        int emptyFieldIndex = field.getEmptyFieldIndex();
 
         if (emptyFieldIndex >= 0) {
             field.getField().put(emptyFieldIndex, Sign.NOUGHT);
+            // Перевіряємо, чи не переміг нулик після додавання останнього нулика
+            if (checkWin(resp, currentSession, field)) {
+                return;
+            }
         }
 
         // Рахуємо список значків
