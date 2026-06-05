@@ -49,6 +49,19 @@ public class LogicServlet extends HttpServlet {
             if (checkWin(resp, currentSession, field)) {
                 return;
             }
+        } else {
+            // Додаємо до сесії прапорець, який сигналізує, що відбулася нічия
+            currentSession.setAttribute("draw", true);
+
+            // Рахуємо список значків
+            List<Sign> data = field.getFieldData();
+
+            // Оновлюємо цей список у сесії
+            currentSession.setAttribute("data", data);
+
+            // Шлемо редирект
+            resp.sendRedirect("/index.jsp");
+            return;
         }
 
         // Рахуємо список значків
@@ -95,7 +108,8 @@ public class LogicServlet extends HttpServlet {
             // Шлемо редирект
             response.sendRedirect("/index.jsp");
             return true;
-        }
+        }// Якщо порожньої ячейки нема і ніхто не переміг – це нічия
+
         return false;
     }
 }
